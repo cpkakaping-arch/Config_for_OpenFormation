@@ -42,3 +42,15 @@ double moyenne_pondere( int n,double tabs[2][n])
 
     return c;
 }
+
+double somme_exp(int n, double x, double tab[n])
+{
+    double b = [n];
+    for (int i = 0; i < n; i++)
+    {
+        double a = tab[i] - x;
+        a = a * a;
+        b[i] = a;
+    }
+    return sum_tableau(n, b);
+}
