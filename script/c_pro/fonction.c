@@ -5,7 +5,7 @@
 # - tabs[0] contient les coefficients ;
 # - tabs[1] contient les notes. 
 */
-
+#include "fonction.h"
 double sum_tableau(int n, double tab[])
 {
     double a = 0;
@@ -20,7 +20,7 @@ double sum_tableau(int n, double tab[])
 double moyenne(int n, double tab[] )
 {
 
-    double a = sum_tableau(tab, n);
+    double a = sum_tableau(n, tab);
     a = a / n;
     return a; 
 
@@ -36,9 +36,9 @@ double moyenne_pondere( int n,double tabs[2][n])
         tab[i] = tabs[0][i] * tabs[1][i];
     }
 
-    c = sum_tableau(tab, n);
+    c = sum_tableau(n, tab);
 
-    c = c / sum_tableau(tabs[0], n);
+    c = c / sum_tableau(n, tabs[0]);
 
     return c;
 }
