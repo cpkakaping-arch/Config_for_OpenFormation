@@ -6,6 +6,8 @@
 # - tabs[1] contient les notes. 
 */
 #include "fonction.h"
+#include <math.h>
+#include <stdio.h>
 double sum_tableau(int n, double tab[])
 {
     double a = 0;
@@ -59,9 +61,10 @@ double ecart_type(int n, double tab[n])
 {
 
    double x = moyenne(n, tab);
-    n = somme_carre(n, x, tab);
-    double c = sqrt((1 / (n - 1)) * n);
-    printf ("%lf",c);
+    x = somme_carre(n, x, tab);
+    double c = sqrt((1 / (n - 1)) * x);
+    printf ("L'écart-type est : ");
+    printf ("%lf\n\n",c);
     return c;
 
 }
