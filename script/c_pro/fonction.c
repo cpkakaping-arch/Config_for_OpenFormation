@@ -43,9 +43,9 @@ double moyenne_pondere( int n,double tabs[2][n])
     return c;
 }
 
-double somme_exp(int n, double x, double tab[n])
+double somme_carre(int n, double x, double tab[n])
 {
-    double b = [n];
+    double b[n];
     for (int i = 0; i < n; i++)
     {
         double a = tab[i] - x;
@@ -53,4 +53,15 @@ double somme_exp(int n, double x, double tab[n])
         b[i] = a;
     }
     return sum_tableau(n, b);
+}
+
+double ecart_type(int n, double tab[n])
+{
+
+   double x = moyenne(n, tab);
+    n = somme_carre(n, x, tab);
+    double c = sqrt((1 / (n - 1)) * n);
+    printf ("%lf",c);
+    return c;
+
 }

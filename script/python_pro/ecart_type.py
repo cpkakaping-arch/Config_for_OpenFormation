@@ -1,20 +1,6 @@
-from fonction import moyenne,sum_tableau
+from fonction import *
 import math
 
-def somme_exp(x, tab):
-    b = []
-    for i in range(len(tab)):
-        a = tab[i] - x
-        a = a * a
-        b.append(a)
-    return sum_tableau(b)
-
-def ecart_type(e,tab):
-    x = moyenne(tab)
-    n = somme_exp(x, tab)
-    c = math.sqrt((1 / (e - 1)) * n)
-    print (f"{c}")
-    return c
 
 tab = []
 
@@ -31,7 +17,7 @@ if e >= 2:
         a = float(input(f"N°{i+1} = "))
         tab.append(a)
 
-    ecart_type(tab)
+    ecart_type(e, tab)
 
 else:
     print ("Il faut au minimum deux valeurs pour executer ce programme")
