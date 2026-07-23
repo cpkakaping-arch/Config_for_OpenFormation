@@ -3,7 +3,7 @@
 # Mémorise le dossier depuis lequel le script est lancé
 DOSSIER_ACTUEL="$(pwd)"
 
-bash ./start.sh
+bash ../start/start.sh
 
 cd ~/
 
