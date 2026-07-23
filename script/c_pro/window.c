@@ -11,12 +11,12 @@ int main ()
     {
         printf("PowerShell detecte\n");
         //system("powershell -ExecutionPolicy Bypass -File ./start.ps1");
-        system("start.bat");
+        system("../../start/start.bat");
     }
     else
     {
         printf("CMD detecte\n");
-        system("start.bat");
+        system("../../start/start.bat");
     }
         int e;
         SetConsoleOutputCP(CP_UTF8);

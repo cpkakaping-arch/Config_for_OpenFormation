@@ -3,7 +3,7 @@
 #include <stdlib.h>
 int main ()
 {
-        system("bash ../../start.sh");
+        system("bash ../../start/start.sh");
         int e;
         puts("Ce programme est utilisé pour calculer l'écart-type selon la physique.\nL'écart-type est une mesure de la dispersion des valeurs d'un échantillon par rapport à la moyenne de cet échantillon.\nIl est calculé en prenant la racine carrée de la variance, qui est la moyenne des carrés des écarts entre chaque valeur et la moyenne de l'échantillon.\n");
         puts("Le calcul de l'écart-type ne concerne que les tableaux contenant au moins deux valeurs.\n");
