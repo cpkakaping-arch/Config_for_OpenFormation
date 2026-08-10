@@ -503,10 +503,10 @@ int main(void)
     system("bash ../start/start.sh");
     (void)getchar();
     system("clear");
-
+    puts("By Dieson Parfait\n");
     printf("==========================================\n");
     printf("          CTF DEV MANAGER v%s\n", VERSION);
-puts("By Dieson Parfait\n");    printf("==========================================\n\n\n\n");
+    printf("==========================================\n\n\n\n");
 
     if (!is_termux())
     {
