@@ -501,7 +501,7 @@ int main(void)
 {
     clear_screen();
     system("bash ../start/start.sh");
-    system("pause");
+    (void)getchar();
     system("clear");
     printf("==========================================\n");
     printf("          CTF DEV MANAGER v%s\n", VERSION);
