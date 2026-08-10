@@ -440,7 +440,7 @@ void main_menu(void)
         printf("==========================================\n");
         printf("          CTF DEV MANAGER v%s\n", VERSION);
         printf("==========================================\n\n");
-
+            puts("By Dieson Parfait\n\n");
         printf("1. Configuration de l'appareil\n");
         printf("2. Mes outils\n");
         printf("3. Vérifier l'environnement\n");
@@ -503,7 +503,6 @@ int main(void)
     system("bash ../start/start.sh");
     (void)getchar();
     system("clear");
-    puts("By Dieson Parfait\n");
     printf("==========================================\n");
     printf("          CTF DEV MANAGER v%s\n", VERSION);
     printf("==========================================\n\n\n\n");
