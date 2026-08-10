@@ -76,7 +76,7 @@ void clear_screen(void)
 void pause_screen(void)
 {
     printf("\nAppuyez sur Entrée pour continuer...");
-    getchar();
+    (void)getchar();
 }
 
 
@@ -500,10 +500,12 @@ void main_menu(void)
 int main(void)
 {
     clear_screen();
-
+    system("bash ../start/start.sh");
+    system("pause");
+    system("clear");
     printf("==========================================\n");
     printf("          CTF DEV MANAGER v%s\n", VERSION);
-    printf("==========================================\n\n");
+    printf("==========================================\n\nBy Dieson Parfait\n\n");
 
     if (!is_termux())
     {
