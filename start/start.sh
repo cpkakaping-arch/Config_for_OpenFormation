@@ -11,6 +11,13 @@ if ! command -v figlet &>/dev/null; then
     pkg update -y && pkg install figlet -y
 fi
 
+# Installer tput si absent
+if ! command -v tput &>/dev/null; then
+    echo "Installation de ncurses-utils..."
+    pkg update -y && pkg install ncurses-utils -y
+fi
+
+
 # 2. Détecter la largeur du terminal
 cols=$(tput cols)
 
