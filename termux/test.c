@@ -505,7 +505,8 @@ int main(void)
     system("clear");
     printf("==========================================\n");
     printf("          CTF DEV MANAGER v%s\n", VERSION);
-    printf("==========================================\n\nBy Dieson Parfait\n\n");
+    printf("==========================================\n\n\n\n");
+    puts("By Dieson Parfait\n");
 
     if (!is_termux())
     {
