@@ -2,8 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <dirent.h>
 
 #define VERSION "0.1.0"
+#define TOOLS_DIR "./tools"
+#define MAX_TOOLS 256
+
 
 /* =========================================================
  * STRUCTURE D'UN OUTIL
@@ -43,6 +47,7 @@ Tool c_tools[] = {
     {"man", "man"},
     {"procps", "ps"},
     {"termux-tools", "termux-info"},
+    {"ncurses-utils", "tput"},
 
     /* Développement C/C++ */
     {"clang", "clang"},
@@ -60,7 +65,8 @@ Tool c_tools[] = {
     {"lldb", "lldb"}
 };
 
-#define C_TOOLS_COUNT (sizeof(c_tools) / sizeof(c_tools[0]))
+#define C_TOOLS_COUNT \
+    (sizeof(c_tools) / sizeof(c_tools[0]))
 
 
 /* =========================================================
@@ -167,20 +173,29 @@ int install_package(const Tool *tool)
 
     if (result != 0)
     {
-        printf("[ERREUR] Impossible d'installer %s.\n",
-               tool->package);
+        printf(
+            "[ERREUR] Impossible d'installer %s.\n",
+            tool->package
+        );
 
         return 0;
     }
 
     if (command_exists(tool->command))
     {
-        printf("[OK] %s installé.\n", tool->package);
+        printf(
+            "[OK] %s installé.\n",
+            tool->package
+        );
+
         return 1;
     }
 
-    printf("[!] Installation terminée mais commande non trouvée : %s\n",
-           tool->command);
+    printf(
+        "[!] Installation terminée mais commande "
+        "non trouvée : %s\n",
+        tool->command
+    );
 
     return 0;
 }
@@ -216,8 +231,10 @@ void configure_c(void)
 
         if (command_exists(tool->command))
         {
-            printf("[OK] %-15s déjà installé\n",
-                   tool->package);
+            printf(
+                "[OK] %-15s déjà installé\n",
+                tool->package
+            );
         }
         else
         {
@@ -245,8 +262,10 @@ void update_system(void)
     printf("              MISE À JOUR\n");
     printf("==========================================\n\n");
 
-    printf("Termux va mettre à jour ses dépôts et\n");
-    printf("les paquets installés.\n\n");
+    printf(
+        "Termux va mettre à jour ses dépôts et\n"
+        "les paquets installés.\n\n"
+    );
 
     if (!ask_confirmation("Voulez-vous continuer ?"))
         return;
@@ -285,15 +304,190 @@ void check_environment(void)
 
         if (command_exists(tool->command))
         {
-            printf("[✓] %-15s disponible\n",
-                   tool->package);
+            printf(
+                "[✓] %-15s disponible\n",
+                tool->package
+            );
         }
         else
         {
-            printf("[!] %-15s absent\n",
-                   tool->package);
+            printf(
+                "[!] %-15s absent\n",
+                tool->package
+            );
         }
     }
+
+    pause_screen();
+}
+
+
+/* =========================================================
+ * LANCEMENT D'UN OUTIL
+ * ========================================================= */
+
+void launch_tool(const char *filename)
+{
+    char path[512];
+    char command[1024];
+
+    const char *extension;
+
+    snprintf(
+        path,
+        sizeof(path),
+        "%s/%s",
+        TOOLS_DIR,
+        filename
+    );
+
+    extension = strrchr(filename, '.');
+
+
+    /* -----------------------------------------------------
+     * SHELL
+     * ----------------------------------------------------- */
+
+    if (extension != NULL &&
+        strcmp(extension, ".sh") == 0)
+    {
+        snprintf(
+            command,
+            sizeof(command),
+            "bash \"%s\"",
+            path
+        );
+    }
+
+
+    /* -----------------------------------------------------
+     * JAVASCRIPT
+     * ----------------------------------------------------- */
+
+    else if (extension != NULL &&
+             strcmp(extension, ".js") == 0)
+    {
+        snprintf(
+            command,
+            sizeof(command),
+            "node \"%s\"",
+            path
+        );
+    }
+
+
+    /* -----------------------------------------------------
+     * PYTHON
+     * ----------------------------------------------------- */
+
+    else if (extension != NULL &&
+             strcmp(extension, ".py") == 0)
+    {
+        snprintf(
+            command,
+            sizeof(command),
+            "python \"%s\"",
+            path
+        );
+    }
+
+
+    /* -----------------------------------------------------
+     * C
+     * ----------------------------------------------------- */
+
+    else if (extension != NULL &&
+             strcmp(extension, ".c") == 0)
+    {
+        snprintf(
+            command,
+            sizeof(command),
+            "clang \"%s\" -o ./tools/.tool_temp && "
+            "./tools/.tool_temp",
+            path
+        );
+    }
+
+
+    /* -----------------------------------------------------
+     * C++
+     * ----------------------------------------------------- */
+
+    else if (
+        extension != NULL &&
+        (
+            strcmp(extension, ".cpp") == 0 ||
+            strcmp(extension, ".cc") == 0 ||
+            strcmp(extension, ".cxx") == 0
+        )
+    )
+    {
+        snprintf(
+            command,
+            sizeof(command),
+            "clang++ \"%s\" -o ./tools/.tool_temp && "
+            "./tools/.tool_temp",
+            path
+        );
+    }
+
+
+    /* -----------------------------------------------------
+     * EXECUTABLE NATIF
+     * ----------------------------------------------------- */
+
+    else
+    {
+        if (access(path, X_OK) != 0)
+        {
+            printf(
+                "\n[ERREUR] Ce fichier n'est pas "
+                "exécutable ou son type n'est pas reconnu.\n"
+            );
+
+            pause_screen();
+            return;
+        }
+
+        snprintf(
+            command,
+            sizeof(command),
+            "\"%s\"",
+            path
+        );
+    }
+
+
+    /* -----------------------------------------------------
+     * EXECUTION
+     * ----------------------------------------------------- */
+
+    printf(
+        "\n[...] Lancement de %s...\n\n",
+        filename
+    );
+
+    system(command);
+
+
+    /* -----------------------------------------------------
+     * NETTOYAGE C / C++
+     * ----------------------------------------------------- */
+
+    if (
+        extension != NULL &&
+        (
+            strcmp(extension, ".c") == 0 ||
+            strcmp(extension, ".cpp") == 0 ||
+            strcmp(extension, ".cc") == 0 ||
+            strcmp(extension, ".cxx") == 0
+        )
+    )
+    {
+        remove("./tools/.tool_temp");
+    }
+
+    printf("\n[OK] Fin de l'outil.\n");
 
     pause_screen();
 }
@@ -305,18 +499,190 @@ void check_environment(void)
 
 void my_tools(void)
 {
-    clear_screen();
+    DIR *directory;
+    struct dirent *entry;
 
-    printf("==========================================\n");
-    printf("               MES OUTILS\n");
-    printf("==========================================\n\n");
+    char *tools[MAX_TOOLS];
 
-    printf("[INFO] Aucun outil personnel n'est encore\n");
-    printf("       enregistré.\n\n");
+    int count = 0;
+    int choice;
+    int i;
 
-    printf("Cette section sera développée plus tard.\n");
 
-    pause_screen();
+    /* -----------------------------------------------------
+     * OUVERTURE DU DOSSIER
+     * ----------------------------------------------------- */
+
+    directory = opendir(TOOLS_DIR);
+
+    if (directory == NULL)
+    {
+        clear_screen();
+
+        printf("==========================================\n");
+        printf("               MES OUTILS\n");
+        printf("==========================================\n\n");
+
+        printf(
+            "[INFO] Le dossier %s n'existe pas.\n",
+            TOOLS_DIR
+        );
+
+        printf(
+            "[INFO] Aucun outil personnel détecté.\n\n"
+        );
+
+        pause_screen();
+
+        return;
+    }
+
+
+    /* -----------------------------------------------------
+     * LECTURE DU DOSSIER
+     * ----------------------------------------------------- */
+
+    while ((entry = readdir(directory)) != NULL)
+    {
+        if (
+            strcmp(entry->d_name, ".") == 0 ||
+            strcmp(entry->d_name, "..") == 0
+        )
+        {
+            continue;
+        }
+
+
+        /*
+         * Ne pas afficher le fichier temporaire
+         * utilisé pour compiler les fichiers C/C++.
+         */
+        if (strcmp(entry->d_name, ".tool_temp") == 0)
+        {
+            continue;
+        }
+
+
+        if (count >= MAX_TOOLS)
+            break;
+
+
+        tools[count] = malloc(
+            strlen(entry->d_name) + 1
+        );
+
+
+        if (tools[count] == NULL)
+            continue;
+
+
+        strcpy(
+            tools[count],
+            entry->d_name
+        );
+
+        count++;
+    }
+
+    closedir(directory);
+
+
+    /* -----------------------------------------------------
+     * MENU DES OUTILS
+     * ----------------------------------------------------- */
+
+    while (1)
+    {
+        clear_screen();
+
+        printf("==========================================\n");
+        printf("               MES OUTILS\n");
+        printf("==========================================\n\n");
+
+
+        if (count == 0)
+        {
+            printf(
+                "[INFO] Aucun outil personnel détecté.\n\n"
+            );
+
+            for (i = 0; i < count; i++)
+                free(tools[i]);
+
+            pause_screen();
+
+            return;
+        }
+
+
+        for (i = 0; i < count; i++)
+        {
+            printf(
+                "%d. %s\n",
+                i + 1,
+                tools[i]
+            );
+        }
+
+
+        printf("\n0. Retour\n\n");
+
+        printf("Votre choix : ");
+
+
+        if (scanf("%d", &choice) != 1)
+        {
+            while (getchar() != '\n');
+
+            printf("\n[!] Choix invalide.\n");
+
+            pause_screen();
+
+            continue;
+        }
+
+
+        while (getchar() != '\n');
+
+
+        /* -------------------------------------------------
+         * RETOUR
+         * ------------------------------------------------- */
+
+        if (choice == 0)
+        {
+            for (i = 0; i < count; i++)
+                free(tools[i]);
+
+            return;
+        }
+
+
+        /* -------------------------------------------------
+         * CHOIX INVALIDE
+         * ------------------------------------------------- */
+
+        if (
+            choice < 1 ||
+            choice > count
+        )
+        {
+            printf("\n[!] Choix invalide.\n");
+
+            pause_screen();
+
+            continue;
+        }
+
+
+        /* -------------------------------------------------
+         * LANCER L'OUTIL
+         * ------------------------------------------------- */
+
+        launch_tool(
+            tools[choice - 1]
+        );
+    }
 }
 
 
@@ -332,7 +698,10 @@ void system_information(void)
     printf("          INFORMATIONS SYSTÈME\n");
     printf("==========================================\n\n");
 
-    printf("Version du manager : %s\n", VERSION);
+    printf(
+        "Version du manager : %s\n",
+        VERSION
+    );
 
     if (is_termux())
         printf("Plateforme         : Termux\n");
@@ -371,6 +740,7 @@ void device_configuration(void)
     while (1)
     {
         clear_screen();
+
         system("../start/start.sh");
 
         printf("==========================================\n");
@@ -385,40 +755,73 @@ void device_configuration(void)
 
         printf("Votre choix : ");
 
+
         if (scanf("%d", &choice) != 1)
         {
             while (getchar() != '\n');
             continue;
         }
 
+
         while (getchar() != '\n');
+
 
         switch (choice)
         {
             case 1:
+
                 configure_c();
+
                 break;
+
 
             case 2:
-                printf("\n[INFO] Configuration Python prévue pour une prochaine version.\n");
+
+                printf(
+                    "\n[INFO] Configuration Python "
+                    "prévue pour une prochaine version.\n"
+                );
+
                 pause_screen();
+
                 break;
+
 
             case 3:
-                printf("\n[INFO] Configuration CTF prévue pour une prochaine version.\n");
+
+                printf(
+                    "\n[INFO] Configuration CTF "
+                    "prévue pour une prochaine version.\n"
+                );
+
                 pause_screen();
+
                 break;
+
 
             case 4:
-                printf("\n[INFO] Configuration complète prévue pour une prochaine version.\n");
+
+                printf(
+                    "\n[INFO] Configuration complète "
+                    "prévue pour une prochaine version.\n"
+                );
+
                 pause_screen();
+
                 break;
 
+
             case 0:
+
                 return;
 
+
             default:
-                printf("\n[!] Choix invalide.\n");
+
+                printf(
+                    "\n[!] Choix invalide.\n"
+                );
+
                 pause_screen();
         }
     }
@@ -438,9 +841,15 @@ void main_menu(void)
         clear_screen();
 
         printf("==========================================\n");
-        printf("          CTF DEV MANAGER v%s\n", VERSION);
+        printf(
+            "          CTF DEV MANAGER v%s\n",
+            VERSION
+        );
+
         printf("==========================================\n\n");
+
         puts("By Dieson Parfait\n\n");
+
         printf("1. Configuration de l'appareil\n");
         printf("2. Mes outils\n");
         printf("3. Vérifier l'environnement\n");
@@ -450,43 +859,69 @@ void main_menu(void)
 
         printf("Votre choix : ");
 
+
         if (scanf("%d", &choice) != 1)
         {
             while (getchar() != '\n');
             continue;
         }
 
+
         while (getchar() != '\n');
+
 
         switch (choice)
         {
             case 1:
+
                 device_configuration();
+
                 break;
+
 
             case 2:
+
                 my_tools();
+
                 break;
+
 
             case 3:
+
                 check_environment();
+
                 break;
+
 
             case 4:
+
                 update_system();
+
                 break;
+
 
             case 5:
+
                 system_information();
+
                 break;
 
+
             case 0:
+
                 clear_screen();
+
                 printf("Au revoir !\n");
+
                 return;
 
+
             default:
-                printf("\n[!] Choix invalide.\n");
+
+                printf(
+                    "\n[!] Choix invalide.\n"
+                );
+
                 pause_screen();
         }
     }
@@ -500,21 +935,40 @@ void main_menu(void)
 int main(void)
 {
     clear_screen();
+
     system("bash ../start/start.sh");
+
     (void)getchar();
+
     system("clear");
+
     printf("==========================================\n");
-    printf("          CTF DEV MANAGER v%s\n", VERSION);
+    printf(
+        "          CTF DEV MANAGER v%s\n",
+        VERSION
+    );
+
     printf("==========================================\n\n\n\n");
+
 
     if (!is_termux())
     {
-        printf("[!] Attention : ce programme est actuellement\n");
-        printf("    conçu pour Termux.\n\n");
+        printf(
+            "[!] Attention : ce programme est actuellement\n"
+        );
 
-        if (!ask_confirmation("Continuer malgré tout ?"))
+        printf(
+            "    conçu pour Termux.\n\n"
+        );
+
+
+        if (!ask_confirmation(
+                "Continuer malgré tout ?"))
+        {
             return 0;
+        }
     }
+
 
     main_menu();
 
