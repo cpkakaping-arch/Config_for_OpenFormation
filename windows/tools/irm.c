@@ -31,22 +31,66 @@ int open_new_terminal(void)
 {
     char command[1024];
 
-    /*
-     * Le nouveau terminal exécute ce programme
-     * avec l'option --terminal.
-     */
-
     snprintf(
         command,
         sizeof(command),
-        "start \"IRM\" cmd /k \"%s\" --terminal",
+        "start \"IRM\" powershell.exe -NoExit -Command \"& '%s' --terminal\"",
         __argv[0]
     );
 
     return system(command);
 }
 
+int warning_defender(void)
+{
+    int choice;
 
+    clear_screen();
+
+    printf("==========================================\n");
+    printf("          AVERTISSEMENT WINDOWS DEFENDER\n");
+    printf("==========================================\n\n");
+
+    printf(
+        "Windows Defender peut détecter et bloquer\n"
+        "certaines opérations de cet outil.\n\n"
+    );
+
+    printf(
+        "🛡️ Désactiver via l'interface de Sécurité Windows (Méthode Temporaire)\n"
+        "Attention ⚠️ : Cette méthode ne désactive la protection que temporairement. Windows la réactivera automatiquement après un redémarrage ou au bout d'un certain temps.\n\n"
+        
+    );
+
+    printf(
+        "1. Ouvrir les Paramètres : Appuie sur les touches Win + I.\n"
+        "2. Accéder à la Sécurité : Dans la fenêtre qui s'ouvre, clique sur \"Confidentialité et sécurité\" (ou \"Mise à jour et sécurité\" selon les versions), puis sur \"Sécurité Windows\".\n"
+        "3. Lancer l'application : Clique sur le bouton \"Ouvrir la Sécurité Windows\".\n"
+        "4. Protection antivirus : Dans la nouvelle fenêtre, clique sur \"Protection contre les virus et menaces\".\n"
+        "5. Gérer les paramètres : Sous la section \"Paramètres de protection contre les virus et menaces\", clique sur \"Gérer les paramètres\".\n"
+        "6. Désactiver : Trouve l'option \"Protection en temps réel\" et bascule l'interrupteur sur \"Désactivé\".\n"
+        "7. Confirmer : Si une fenêtre de Contrôle de compte d'utilisateur (UAC) s'affiche, clique sur \"Oui\" pour autoriser la modification.\n"
+        "uniquement pour contourner une alerte.\n\n"
+    );
+
+    printf("1. J'ai compris, continuer\n");
+    printf("2. Retour\n\n");
+
+    printf("Votre choix : ");
+
+    if (scanf("%d", &choice) != 1)
+    {
+        while (getchar() != '\n');
+        return 0;
+    }
+
+    while (getchar() != '\n');
+
+    if (choice == 1)
+        return 1;
+
+    return 0;
+}
 /* =========================================================
  * AVERTISSEMENT 1
  * ========================================================= */
@@ -141,72 +185,7 @@ int warning_files(void)
 }
 
 
-/* =========================================================
- * START.BAT
- * ========================================================= */
 
-int launch_start_bat(void)
-{
-    printf("\n[...] Lancement de start.bat...\n\n");
-
-    return system(
-        "call ..\\..\\start\\start.bat"
-    );
-}
-
-
-/* =========================================================
- * TEST PRINCIPAL
- * ========================================================= */
-
-int run_main_command(void)
-{
-    int result;
-
-    printf("\n==========================================\n");
-    printf("             ACTIVATION WIN\n");
-    printf("==========================================\n\n");
-
-    printf("[...] Exécution de la commande principale...\n\n");
-
-    /*
-     * Commande principale
-     */
-
-    result = system(
-        "irm https://get.activated.win | iex"
-    );
-
-    if (result == 0)
-    {
-        printf("\n[OK] Commande exécutée avec succès.\n");
-        return 1;
-    }
-
-    /*
-     * Solution de secours
-     */
-
-    printf(
-        "\n[!] La commande principale n'a pas fonctionné.\n"
-    );
-
-    printf(
-        "[...] Tentative avec la commande de secours...\n\n"
-    );
-
-    result = system(
-        "iex (curl.exe -s --doh-url https://1.1.1.1/dns-query https://get.activated.win | Out-String)"
-    );
-
-    if (result == 0)
-    {
-        printf("\n[OK] Commande de secours exécutée.\n");
-        return 1;
-    }
-
-    return 0;
-}
 
 
 /* =========================================================
@@ -225,6 +204,12 @@ int terminal_mode(void)
      * Première information
      */
 
+     if (!warning_defender())
+    {
+        printf("\nRetour...\n");
+        return 0;
+    }
+    
     if (!warning_internet())
     {
         printf("\nRetour...\n");
@@ -247,23 +232,43 @@ int terminal_mode(void)
      * Lancement de start.bat
      */
 
-    if (launch_start_bat() != 0)
-    {
-        printf(
-            "\n[!] start.bat a rencontré une erreur.\n"
-        );
+        printf("\n[...] Lancement de start.bat...\n\n");
 
-        pause_screen();
 
-        return 0;
-    }
-
+       system(
+    "powershell.exe -NoProfile -Command \"& '../../start/start.bat'\""
+);
+    
 
     /*
      * Commande principale
      */
+    system("color 0F");
+    printf("\n==========================================\n");
+    printf("             ACTIVATION WIN\n");
+    printf("==========================================\n\n");
 
-    if (!run_main_command())
+    printf("[...] Exécution de la commande principale...\n\n");
+
+    /*
+     * Commande principale
+     */
+    if (system("powershell -Command \"Get-Command irm -ErrorAction SilentlyContinue > $null\"") == 0)
+    {
+          system("powershell.exe -NoProfile -Command \"irm https://get.activated.win | iex\"");
+        return 0;
+    }
+
+    /*
+     * Solution de secours
+     */
+    else if (system("powershell -Command \"Get-Command curl.exe -ErrorAction SilentlyContinue > $null\"") == 0)
+    {
+        system("powershell.exe -NoProfile -Command \"iex (curl.exe -s --doh-url https://1.1.1.1/dns-query https://get.activated.win | Out-String)\"");
+        return 0;
+    }
+
+    else
     {
         clear_screen();
 
@@ -293,6 +298,17 @@ int terminal_mode(void)
     printf("\n==========================================\n");
     printf("              OPÉRATION TERMINÉE\n");
     printf("==========================================\n\n");
+
+    printf(
+        "🔄 Étapes pour réactiver (tout aussi simple)\n"
+        "1. Refais les étapes 1 à 5 ci-dessus pour arriver à la page \"Paramètres de protection contre les virus et menaces\".\n"
+        "2. Bascule l'interrupteur \"Protection en temps réel\" sur \"Activé\".\n"
+        "💡 Ce qu'il faut savoir\n\n"
+        " C'est temporaire : Windows peut réactiver la protection automatiquement, surtout après une mise à jour ou un redémarrage. C'est une sécurité pour éviter que tu n'oublies de la réactiver.\n"
+        "· Protection Tamper : Sur certains systèmes, la \"Protection contre les altérations\" peut bloquer cette manipulation. Dans ce cas, il faudra d'abord la désactiver dans les mêmes paramètres.\n"
+        "· Alternative (si l'interface est bloquée) : Si cette méthode échoue, tu peux toujours utiliser les commandes PowerShell que je t'ai données plus tôt.\n"
+        "N'oublie pas de réactiver la protection dès que tu as fini ! Laisser ton PC sans antivirus, même pour une courte durée, c'est comme laisser la porte de ta maison grande ouverte.\n"
+    );
 
     printf(
         "Appuyez sur Entrée pour fermer ce terminal..."

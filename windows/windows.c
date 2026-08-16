@@ -1227,9 +1227,7 @@ int main(void)
         "call ..\\start\\start.bat"
     );
 
-
-    (void)getchar();
-
+    system("color 0F");
 
     system("cls");
 
