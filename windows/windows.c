@@ -1213,6 +1213,9 @@ void main_menu(void)
 
 int main(void)
 {
+    SetConsoleOutputCP(CP_UTF8);
+    SetConsoleCP(CP_UTF8);
+
     clear_screen();
 
 
