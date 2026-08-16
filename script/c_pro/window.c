@@ -11,7 +11,7 @@ int main ()
     {
         printf("PowerShell detecte\n");
         //system("powershell -ExecutionPolicy Bypass -File ./start.ps1");
-        system("../../start/start.bat");
+        system("..\\..\\start\\start.bat");
     }
     else
     {
